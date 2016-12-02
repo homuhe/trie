@@ -1,11 +1,17 @@
 package com.ir
 
-import scala.io.Source
+import scala.io.{Source, StdIn}
 
 
 /**
   * @author ${user.name}
   */
+
+class TrieSearcher{
+
+  val trie = new Trie
+  val reversedTrie = new Trie
+}
 
 class Trie extends Node{
 
@@ -14,184 +20,124 @@ class Trie extends Node{
   for(index <- 0 to 25){
     alphabet = alphabet :+ (index+97).toChar
   }
-  //intial start node : root
-  //  val root = new Node
 
   // dummy constructor to only take input word an not the trie not as input
-  def addWord(word: String): Unit ={
-    addWord(word, this)
+  def insertWord(word: String): Unit ={
+    insertWord(word, this)
 
-    def addWord(word: String, node: Node): Unit = {
+    def insertWord(word: String, node: Node): Unit = {
       if (word.length > 0){
         // 'a' has a int value of 97. 'a' - 'a' = 0 -> index
         val index = word.head - 'a'
 
         if (node.nodeArray(index) == null)
           node.nodeArray(index) = new Node
-        addWord(word.tail, node.nodeArray(index))
+        insertWord(word.tail, node.nodeArray(index))
 
       } else node.wordComplete = true
     }
   }
 
-
-
-
-
-  def prefixSearch(query: String): Set[String] = {
-    val asterixAt = query.indexOf("*")
-    val prefix = query.substring(0, asterixAt)
-    val suffix = query.substring(asterixAt+1)
-
-    println("asterixAt: " + asterixAt)
-    println(prefix + " " + suffix)
-
-
-
-    var output = Set[String]()
-    //prefix search - prexisearch of normal trie
-    if(query.endsWith("*")) {
-      output = findAllWordsWithPrefix(prefix, commonPrefixNode(prefix))
-    }
-    //suffix search - prefixsearch of reversed trie
-    if(query.startsWith("*")) {
-      output = findAllWordsWithPrefix(prefix, commonPrefixNode(prefix))
-    }
-    //otherwise infix search
-    // intersect of both
-    output
-
-  }
-
-  def commonPrefixNode(prefix: String):  Node = searchWord(createCharIndices(prefix), this)
-
+  def commonPrefixNode(prefix: String):  Node = searchPrefixNode(prefix, this)
 
   def findAllWordsWithPrefix(prefix: String, node: Node): Set[String] ={
     var tempSet = Set[String]()
 
-    for(charIndex <- 0 until node.nodeArray.length){
-      if(node.nodeArray(charIndex) != null){
-        val newWord = (prefix + alphabet(charIndex))
+    if(node != null)
+      for(charIndex <- node.nodeArray.indices){
+        if(node.nodeArray(charIndex) != null){
+          val newWord = (prefix + alphabet(charIndex))
 
-        if(node.nodeArray(charIndex).wordComplete){
-          tempSet += newWord
+          if(node.nodeArray(charIndex).wordComplete)
+            tempSet += newWord
+          tempSet = tempSet ++ findAllWordsWithPrefix(newWord, node.nodeArray(charIndex))
         }
-        tempSet = tempSet ++ findAllWordsWithPrefix(newWord, node.nodeArray(charIndex))
       }
-    }
     tempSet
   }
 
-  def containsWord(word: String): Boolean = {
-    return searchWord(createCharIndices(word), this).wordComplete
+  // checks whether or not a word exists in the lexicon
+  def containsWord(word: String): Boolean = searchPrefixNode(word, this).wordComplete
+
+
+  /*
+  *
+  *
+  */
+  def searchPrefixNode(prefix: String, node: Node): Node = {
+    if (prefix.length > 0){
+      val index = prefix.head - 'a'
+      if (node.nodeArray(index) == null) return null
+      searchPrefixNode(prefix.drop(1), node.nodeArray(index))
+    } else node
   }
-
-  def createCharIndices(word: String): List[Int] = {
-    var charIndices = List[Int]()
-    for(char <- word){
-      val charIndex = (char-97)
-      if(charIndex > 25 || charIndex < 0)
-        return List[Int]()
-      charIndices = charIndices :+ charIndex
-    }
-    charIndices
-  }
-
-  def searchWord(indices: List[Int], node: Node): Node = {
-    val dummyNode = new Node
-    if(node == null) return dummyNode
-    if(indices.isEmpty){
-      node
-    }else{
-      if(node.nodeArray == null)
-        return dummyNode
-      if(node.nodeArray(indices.head) == null)
-        return dummyNode
-      searchWord(indices.drop(1), node.nodeArray(indices.head))
-    }
-  }
-
-
 
 }
 
-
+/*
+* Node class which is used as a container for further node links
+*
+*/
 class Node {
-  //  val charArray = Array.fill[Boolean](26)(false)
   val nodeArray = Array.fill[Node](26)(null)
   var wordComplete = false
-
-  override def toString = {
-    var toString = "| "
-    for(charIndex <- 0 until nodeArray.length){
-      if(nodeArray(charIndex) != null)
-        toString = toString + (charIndex + 97).toChar
-      else
-        toString = toString + " "
-      toString +=  " | "
-    }
-    toString.trim
-  }
 }
 
 object Trie {
   def main(args : Array[String]): Unit =  {
-
+    //    val run = new TrieSearcher
+    // das vielleicht in den TrieSearcher packen?
     val trie = new Trie
     val reversedtrie = new Trie
 
-
-    var lines = Source.fromFile("sowpods.txt").getLines()
+    val lines = Source.fromFile("sowpods.txt").getLines()
 
     for(line <- lines){
       //      if(!line.matches("[a-z]*"))
-      //      println(line)
-      trie.addWord(line)
-      reversedtrie.addWord(line.reverse)
+      trie.insertWord(line)
+      reversedtrie.insertWord(line.reverse)
     }
 
-    for(line <-lines){
-      trie.containsWord(line)
+    def query(query: String): Unit ={
+
+      if(query.contains("*")) {
+        val asterixAt = query.indexOf("*")
+        var prefix = ""
+        val suffix = query.substring(asterixAt+1)
+
+        var trieResults = Set[String]()
+        var reversedTrieResults = Set[String]()
+        if(query.endsWith("*")) { //normal search with a given prefix
+          prefix = query.substring(0, asterixAt)
+          trieResults = trie.findAllWordsWithPrefix(prefix, trie.commonPrefixNode(prefix))
+          println(trieResults)
+        } else if(query.startsWith("*")) { // here we have to do a prefix search on the reversedTrie
+          prefix = suffix.reverse
+          reversedTrieResults = reversedtrie.findAllWordsWithPrefix(prefix, reversedtrie.commonPrefixNode(prefix))
+            .map(word => word.reverse)
+          println(reversedTrieResults)
+        } else { //infix search here
+          prefix = query.substring(0, asterixAt)
+          trieResults = trie.findAllWordsWithPrefix(prefix, trie.commonPrefixNode(prefix))
+
+          prefix = suffix.reverse
+          reversedTrieResults = reversedtrie.findAllWordsWithPrefix(prefix, reversedtrie.commonPrefixNode(prefix))
+            .map(word => word.reverse)
+
+          println(trieResults.intersect(reversedTrieResults))
+
+        }
+      } else{ // else we have a normal contains word search
+        if(trie.containsWord(query)) println(query + " is a word.")
+        else println(query + " does not exist in the lexicon.")
+      }
     }
 
-    //    println(trie.containsWord("gunmen"))
-    //    println(trie.containsWord("gunmennen"))
-    //    //großbuchstabe
-    //    println(trie.containsWord("Behinderung"))
-    //
-    //    println("---")
-    //    println(trie.containsWord("jew"))
-    //    println(trie.containsWord("nazi"))
-    //    println(trie.containsWord("hitler"))
-    //
-    //    println("~~~")
-    //    //taste rückwärts
-    //    println(trie.containsWord("taste"))
-    //    println(trie.containsWord("etsat"))
-    //    println(reversedtrie.containsWord("etsat"))
-    //
-    //    println("Es ist vollbracht!")
-
-
-    //    trie.addWord("gun")
-    //    trie.addWord("guns")
-    //    trie.addWord("gunmen")
-    //    trie.addWord("gunner")
-
-
-    println(trie.prefixSearch("gun*"))
-    println(trie.prefixSearch("gun*er"))
-//    println(trie.prefixSearch("haha"))
-//    println(trie.prefixSearch("mongo"))
-//    println(trie.prefixSearch("jew"))
-    //    println(trie.findAllWordsWithPrefix("gun", trie.commonPrefixNode("gun")))
-
+    def input: String = StdIn.readLine()
+    while(true){
+      println("your search: ")
+      query(input)
+    }
 
   }
 }
-
-
-
-
-
-
