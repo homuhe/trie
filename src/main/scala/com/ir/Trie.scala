@@ -1,5 +1,7 @@
 package com.ir
 
+import scala.io.Source
+
 
 /**
   * @author ${user.name}
@@ -13,48 +15,85 @@ class Trie extends Node{
     alphabet = alphabet :+ (index+97).toChar
   }
   //intial start node : root
-  val root = new Node
+//  val root = new Node
 
-  // magic here
-  def addWord(word: String, node: Node): Unit = {
-
-
-    if (word.length > 0){
-//      println("working on: " + word.head + " - remaining: " + word.tail)
-      // 'a' has a int value of 97. 'a' - 'a' = 0 -> index
-      val index = word.head - 'a'
-
-      if (!node.charArray(index)) {
-        node.charArray(index) = true
-        node.nodeArray(index) = new Node
-      }
-      addWord(word.tail, node.nodeArray(index))
-
-      println(node)
-    } else println("done!")
+  // dummy constructor to only take input word an not the trie not as input
+  def addWord(word: String): Unit ={
+    addWord(word, this)
 
 
+    def addWord(word: String, node: Node): Unit = {
+      if (word.length > 0){
+        // 'a' has a int value of 97. 'a' - 'a' = 0 -> index
+        val index = word.head - 'a'
 
+        if (node.nodeArray(index) == null) {
+          node.nodeArray(index) = new Node
+        }
+        addWord(word.tail, node.nodeArray(index))
 
+        //      println(node)
+      } else node.wordComplete = true
+    }
   }
 
 
-  def searchPrefix(word: String): Unit = {}
 
-  def containsWord(word: String): Unit = {}
+
+
+  def searchPrefix(word: String): Unit = {}
+  def findAllWordsWithPrefix(word: String): Unit ={}
+
+  def asterixSearch(query: String): Unit ={
+    if(query.startsWith("*")) {}
+      //suffix search - prefixsearch of reversed trie
+    if(query.endsWith("*")) {} //prefix search - prexisearch of normal trie
+
+    //otherwise infix search
+    val asterixAt = query.indexOf("*")
+    val prefix = query.substring(0, asterixAt-1)
+    val suffix = query.substring(asterixAt+1)
+  }
+
+  def containsWord(word: String): Boolean = {
+
+    var charIndices = List[Int]()
+    for(char <- word){
+      val charIndex = (char-97)
+      if(charIndex > 25 || charIndex < 0)
+        return false
+      charIndices = charIndices :+ charIndex
+    }
+    searchWord(charIndices, this)
+  }
+
+  def searchWord(indices: List[Int], node: Node): Boolean = {
+    if(node == null) return false
+    if(indices.isEmpty){
+      node.wordComplete
+    }else{
+      if(node.nodeArray == null)
+        return false
+      if(node.nodeArray(indices.head) == null)
+        return false
+      searchWord(indices.drop(1), node.nodeArray(indices.head))
+    }
+  }
+
+
 
 }
 
 
 class Node {
-
-  val charArray = Array.fill[Boolean](26)(false)
+  //  val charArray = Array.fill[Boolean](26)(false)
   val nodeArray = Array.fill[Node](26)(null)
+  var wordComplete = false
 
   override def toString = {
     var toString = "| "
-    for(charIndex <- 0 until charArray.length-1){
-      if(charArray(charIndex))
+    for(charIndex <- 0 until nodeArray.length){
+      if(nodeArray(charIndex) != null)
         toString = toString + (charIndex + 97).toChar
       else
         toString = toString + " "
@@ -62,39 +101,45 @@ class Node {
     }
     toString.trim
   }
-  //\n ${nodeArray.deep.mkString(" ")})"
-
 }
 
 object Trie {
   def main(args : Array[String]): Unit =  {
 
     val trie = new Trie
+    val reversedtrie = new Trie
 
 
+    var lines = Source.fromFile("sowpods.txt").getLines()
 
-    //    trie.addWord("root", trie)
-    //    trie.addWord("boot", trie)
-    //    trie.addWord("shoot", trie)
-//    trie.addWord("za", trie)
-    trie.addWord("ab", trie)
-    trie.addWord("ab", trie)
-//    trie.addWord("ab", trie)
+    for(line <- lines){
+//      if(!line.matches("[a-z]*"))
+//      println(line)
+      trie.addWord(line)
+      reversedtrie.addWord(line.reverse)
+    }
 
-    println("---------------")
-    println(trie)
-    println(trie.nodeArray(0))
+    for(line <-lines){
+      trie.containsWord(line)
+    }
 
-//    println(trie.nodeArray(1))
-//    println(trie.nodeArray(0).charArray(1))
-//    println(trie.nodeArray(0).nodeArray(1))
-    //    println(trie.alphabet.deep.mkString(" "))
+    println(trie.containsWord("gunmen"))
+    println(trie.containsWord("gunmennen"))
+    //großbuchstabe
+    println(trie.containsWord("Behinderung"))
 
-    //    println(trie.nodeArray(1))
-    //    trie.addWord("a")
-    //    trie.addWord("a")
-    //    trie.addWord("a")
-    //    println(trie.root)
+    println("---")
+    println(trie.containsWord("jew"))
+    println(trie.containsWord("nazi"))
+    println(trie.containsWord("hitler"))
+
+    println("~~~")
+    //taste rückwärts
+    println(trie.containsWord("taste"))
+    println(trie.containsWord("etsat"))
+    println(reversedtrie.containsWord("etsat"))
+
+    println("Es ist vollbracht!")
 
 
   }
