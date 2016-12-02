@@ -2,39 +2,45 @@ package com.ir
 
 import scala.io.{Source, StdIn}
 
-
-class TrieSearcher{
-
-  val trie = new Trie
-  val reversedTrie = new Trie
+class Node {
+  val nodeArray = Array.fill[Node](26)(null)
+  var wordComplete = false
 }
 
-class Trie extends Node{
+class Trie extends Node {
 
-  // final alphabet
-  //TODO DELETE
-  var alphabet: Array[Char] = Array()
-  for(index <- 0 to 25){
-    alphabet = alphabet :+ (index+97).toChar
-  }
-
-  // dummy constructor to only take input word an not the trie not as input
-  def insertWord(word: String): Unit ={
-    def insertWord(word: String, node: Node): Unit = {
-      if (word.length > 0){
+  def add(word: String): Unit = {
+    def add(word: String, node: Node): Unit = {
+      if (word.length > 0) {
 
         val index = word.head - 'a'
-
         if (node.nodeArray(index) == null)
           node.nodeArray(index) = new Node
-        insertWord(word.tail, node.nodeArray(index))
+        add(word.tail, node.nodeArray(index))
 
-      } else node.wordComplete = true
+      }
+      else node.wordComplete = true
     }
-    insertWord(word, this)
+    add(word, this)
   }
 
-  def findAllWordsWithPrefix(prefix: String, node: Node): Set[String] ={
+  def searchPrefixNode(prefix: String):  Node = {
+    def searchPrefixNode(prefix: String, node: Node): Node = {
+      if (prefix.length > 0) {
+
+        val index = prefix.head - 'a'
+        if (node.nodeArray(index) == null)
+          return null
+        searchPrefixNode(prefix.tail, node.nodeArray(index))
+      }
+      else node
+    }
+    searchPrefixNode(prefix, this)
+  }
+
+  def containsWord(word: String): Boolean = searchPrefixNode(word).wordComplete
+
+  def searchPrefix(prefix: String, node: Node): Set[String] ={
     var tempSet = Set[String]()
 
     if(node != null)
@@ -44,34 +50,15 @@ class Trie extends Node{
 
           if(node.nodeArray(charIndex).wordComplete)
             tempSet += newWord
-          tempSet = tempSet ++ findAllWordsWithPrefix(newWord, node.nodeArray(charIndex))
+          tempSet = tempSet ++ searchPrefix(newWord, node.nodeArray(charIndex))
         }
       }
     tempSet
   }
-
-  def containsWord(word: String): Boolean = searchPrefixNode(word).wordComplete
-
-  def searchPrefixNode(prefix: String):  Node = {
-    def searchPrefixNode(prefix: String, node: Node): Node = {
-      if (prefix.length > 0){
-        val index = prefix.head - 'a'
-        if (node.nodeArray(index) == null) return null
-        searchPrefixNode(prefix.tail, node.nodeArray(index))
-      } else node
-    }
-    searchPrefixNode(prefix, this)
-  }
-
-}
-
-
-class Node {
-  val nodeArray = Array.fill[Node](26)(null)
-  var wordComplete = false
 }
 
 object Trie {
+
   def main(args : Array[String]): Unit =  {
 
     val trie = new Trie
@@ -79,50 +66,63 @@ object Trie {
 
     val lines = Source.fromFile("sowpods.txt").getLines()
 
-    lines.foreach(line => trie.insertWord(line))
-    lines.foreach(line => reversedtrie.insertWord(line.reverse))
+    for (word <- lines) {
+      trie.add(word)
+      reversedtrie.add(word.reverse)
+    }
 
+    query_call()
 
-    def query(query: String): Unit ={
+    def query(query: String): Set[String] = {
 
-      if(query.contains("*")) {
-        val asterixAt = query.indexOf("*")
-        var prefix = ""
-        val suffix = query.substring(asterixAt+1)
+      val asterixAt = query.indexOf("*")
+      val suffix = query.substring(asterixAt+1)
+      var result = Set[String]()
 
-        var trieResults = Set[String]()
-        var reversedTrieResults = Set[String]()
-        if(query.endsWith("*")) { //normal search with a given prefix
-          prefix = query.substring(0, asterixAt)
-          trieResults = trie.findAllWordsWithPrefix(prefix, trie.searchPrefixNode(prefix))
-          println(trieResults)
-        } else if(query.startsWith("*")) { // here we have to do a prefix search on the reversedTrie
-          prefix = suffix.reverse
-          reversedTrieResults = reversedtrie.findAllWordsWithPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
-            .map(word => word.reverse)
-          println(reversedTrieResults)
-        } else { //infix search here
-          prefix = query.substring(0, asterixAt)
-          trieResults = trie.findAllWordsWithPrefix(prefix, trie.searchPrefixNode(prefix))
+      if (query.endsWith("*"))
+        prefix_search()
+      else if (query.startsWith("*"))
+        suffix_search()
+      else
+        infix_search()
 
-          prefix = suffix.reverse
-          reversedTrieResults = reversedtrie.findAllWordsWithPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
-            .map(word => word.reverse)
-
-          println(trieResults.intersect(reversedTrieResults))
-
-        }
-      } else{ // else we have a normal contains word search
-        if(trie.containsWord(query)) println(query + " is a word.")
-        else println(query + " does not exist in the lexicon.")
+      def prefix_search() = {
+        val prefix = query.substring(0, asterixAt)
+        result = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
       }
+
+      def suffix_search() = { // here we have to do a prefix search on the reversedTrie
+      val prefix = suffix.reverse
+        result = reversedtrie
+          .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
+          .map(word => word.reverse)
+      }
+
+      def infix_search() = { //infix search here
+      var prefix = query.substring(0, asterixAt)
+        val trieResults = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
+
+        prefix = suffix.reverse
+
+        val reversedTrieResults = reversedtrie
+          .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
+          .map(word => word.reverse)
+
+        result = trieResults.intersect(reversedTrieResults)
+      }
+      result
     }
 
-    def input: String = StdIn.readLine()
-    while(true){
-      println("your search: ")
-      query(input)
+    def query_call(): Unit = {
+      print("trie-search: "); val input = StdIn.readLine()
+      if (input.contains("*")) {
+        query(input).foreach(println)
+      }
+      else {
+        //if(trie.containsWord(input)) BUG: aaa throws Exception, why?
+        println(input)
+      }
+      query_call()
     }
-
   }
 }
