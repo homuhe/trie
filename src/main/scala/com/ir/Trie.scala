@@ -39,7 +39,7 @@ class Trie extends Node {
 
   def containsWord(word: String): Boolean = searchPrefixNode(word).wordComplete
 
-  def searchPrefix(prefix: String, node: Node): Set[String] ={
+  def searchPrefix(prefix: String, node: Node): Set[String] = {
     var tempSet = Set[String]()
 
     if(node != null)
