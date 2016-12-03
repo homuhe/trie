@@ -29,8 +29,7 @@ class Trie extends Node {
       if (prefix.length > 0) {
 
         val index = prefix.head - 'a'
-        if (node.nodeArray(index) == null)
-          return new Node
+        if (node.nodeArray(index) == null) new Node
         searchPrefixNode(prefix.tail, node.nodeArray(index))
       }
       else node
