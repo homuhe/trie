@@ -3,7 +3,7 @@ package com.ir
 import scala.io.{Source, StdIn}
 
 class Node {
-  val nodeArray = Array.fill[Node](26)(null)
+  val nodeArray = new Array[Node](26)
   var wordComplete = false
 }
 
@@ -29,7 +29,8 @@ class Trie extends Node {
       if (prefix.length > 0) {
 
         val index = prefix.head - 'a'
-        if (node.nodeArray(index) == null) new Node
+        if (node.nodeArray(index) == null)
+          return new Node
         searchPrefixNode(prefix.tail, node.nodeArray(index))
       }
       else node
@@ -91,14 +92,14 @@ object Trie {
       }
 
       def suffix_search() = { // here we have to do a prefix search on the reversedTrie
-        val prefix = suffix.reverse
+      val prefix = suffix.reverse
         result = reversedtrie
           .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
           .map(word => word.reverse)
       }
 
       def infix_search() = { //infix search here
-        var prefix = query.substring(0, asterixAt)
+      var prefix = query.substring(0, asterixAt)
         val trieResults = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
 
         prefix = suffix.reverse
@@ -115,15 +116,11 @@ object Trie {
     def query_call(): Unit = {
       print("trie-search: "); val input = StdIn.readLine()
       if (input.contains("*")) {
-        if (trie.containsWord(input.init))
-          println(input.init)
         query(input).foreach(println)
       }
       else {
-        if(trie.containsWord(input))
-          println(input)
-        else
-          println(input + " not in lexicon.")
+        if(trie.containsWord(input)) println(input)
+        else println(input + " not in lexicon.")
       }
       query_call()
     }
