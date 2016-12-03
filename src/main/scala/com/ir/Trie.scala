@@ -116,6 +116,7 @@ object Trie {
     def query_call(): Unit = {
       print("trie-search: "); val input = StdIn.readLine()
       if (input.contains("*")) {
+        if (trie.containsWord(input.init)) println(input.init)
         query(input).foreach(println)
       }
       else {
