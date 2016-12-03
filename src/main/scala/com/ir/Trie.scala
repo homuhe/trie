@@ -1,5 +1,6 @@
 package com.ir
 
+import scala.collection.immutable.SortedSet
 import scala.io.{Source, StdIn}
 
 class Node {
@@ -38,10 +39,10 @@ class Trie extends Node {
     searchPrefixNode(prefix, this)
   }
 
-  def containsWord(word: String): Boolean = searchPrefixNode(word).wordComplete
+  def contains(word: String): Boolean = searchPrefixNode(word).wordComplete
 
-  def searchPrefix(prefix: String, node: Node): Set[String] = {
-    var tempSet = Set[String]()
+  def searchPrefix(prefix: String, node: Node): SortedSet[String] = {
+    var tempSet = SortedSet[String]()
 
     if(node != null)
       for(charIndex <- node.nodeArray.indices){
@@ -73,11 +74,11 @@ object Trie {
 
     query_call()
 
-    def query(query: String): Set[String] = {
+    def query(query: String): SortedSet[String] = {
 
       val asterixAt = query.indexOf("*")
       val suffix = query.substring(asterixAt+1)
-      var result = Set[String]()
+      var result = SortedSet[String]()
 
       if (query.endsWith("*"))
         prefix_search()
@@ -116,10 +117,12 @@ object Trie {
     def query_call(): Unit = {
       print("trie-search: "); val input = StdIn.readLine()
       if (input.contains("*")) {
+        if (trie.contains(input.filter(_ != '*'))) //words starting/ending with * which are in lexicon
+          println(input.filter(_ != '*'))           //TODO: enhance solution
         query(input).foreach(println)
       }
       else {
-        if(trie.containsWord(input)) println(input)
+        if(trie.contains(input)) println(input)
         else println(input + " not in lexicon.")
       }
       query_call()
