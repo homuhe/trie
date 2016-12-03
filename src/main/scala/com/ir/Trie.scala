@@ -30,7 +30,7 @@ class Trie extends Node {
 
         val index = prefix.head - 'a'
         if (node.nodeArray(index) == null)
-          return null
+          return new Node
         searchPrefixNode(prefix.tail, node.nodeArray(index))
       }
       else node
@@ -92,14 +92,14 @@ object Trie {
       }
 
       def suffix_search() = { // here we have to do a prefix search on the reversedTrie
-      val prefix = suffix.reverse
+        val prefix = suffix.reverse
         result = reversedtrie
           .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
           .map(word => word.reverse)
       }
 
       def infix_search() = { //infix search here
-      var prefix = query.substring(0, asterixAt)
+        var prefix = query.substring(0, asterixAt)
         val trieResults = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
 
         prefix = suffix.reverse
@@ -116,12 +116,15 @@ object Trie {
     def query_call(): Unit = {
       print("trie-search: "); val input = StdIn.readLine()
       if (input.contains("*")) {
-        if (trie.containsWord(input.init)) println(input.init)
+        if (trie.containsWord(input.init))
+          println(input.init)
         query(input).foreach(println)
       }
       else {
-        //if(trie.containsWord(input)) BUG: aaa throws Exception, why?
-        println(input)
+        if(trie.containsWord(input))
+          println(input)
+        else
+          println(input + " not in lexicon.")
       }
       query_call()
     }
