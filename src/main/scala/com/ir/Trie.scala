@@ -92,14 +92,14 @@ object Trie {
       }
 
       def suffix_search() = { // here we have to do a prefix search on the reversedTrie
-      val prefix = suffix.reverse
+        val prefix = suffix.reverse
         result = reversedtrie
                       .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
                       .map(word => word.reverse)
       }
 
       def infix_search() = { //infix search here
-      var prefix = query.substring(0, asterixAt)
+        var prefix = query.substring(0, asterixAt)
         val trieResults = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
 
         prefix = suffix.reverse
