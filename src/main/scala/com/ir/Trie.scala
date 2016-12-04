@@ -3,6 +3,15 @@ package com.ir
 import scala.collection.immutable.SortedSet
 import scala.io.{Source, StdIn}
 
+/** Author:       Alexander Hartmann,
+  *               Holger Muth-Hellebrandt
+  *
+  * Task:         Assignment 2
+  * Description:  Wildcard query search as Trie implementation.
+  */
+
+
+
 /**
   * Node class consisting of: - Node Array of size 26
   *                           - boolean which marks if Node contains a complete word
@@ -168,20 +177,28 @@ object Trie {
 
     /**
       * Handles (possibly invalid) user inputs.
-      * Only ([A-Z][a-z])*('*')?([A-Z][a-z])* will be searched, uppercase will be normalized.
+      * Only ([A-Z][a-z])*('*')?([A-Z][a-z])* will be searched,
+      *                                       uppercase will be normalized,
+      *                                       other inputs will be rejected.
       */
     def query_call(): Unit = {
+
       print("trie-search: "); val input = StdIn.readLine().toLowerCase
-      if (input.count(_ == '*') == 1) {
-        if (trie.contains(input.filter(_ != '*'))) //empty '*' case
-          println(input.filter(_ != '*'))
-        query(input).foreach(println)
+
+      // Only ([a-z])*('*')*([a-z])* queries
+      if (input.forall(char => (char - 97) > 0 && (char - 97)  < 25 || char == '*')) {
+
+        if (input.count(_ == '*') == 1) {
+          if (trie.contains(input.filter(_ != '*'))) //empty '*' case
+            println(input.filter(_ != '*'))
+          query(input).foreach(println)
+        }
+        else if (input.count(_ == '*') == 0) {
+          if(trie.contains(input)) println(input)
+          else println(input + " not in lexicon.")
+        }
       }
-      else if (input.count(_ == '*') == 0) {
-        if(trie.contains(input)) println(input)
-        else println(input + " not in lexicon.")
-      }
-      else println("Only 1 '*' or less allowed in search query.")
+      else println("Only letters A-Za-z and one or less '*' symbols are allowed.")
       query_call()
     }
   }
