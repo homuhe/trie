@@ -3,18 +3,31 @@ package com.ir
 import scala.collection.immutable.SortedSet
 import scala.io.{Source, StdIn}
 
+/**
+  * Node class consisting of: - Node Array of size 26
+  *                           - boolean which marks if Node contains a complete word
+  */
 class Node {
   val nextNode = new Array[Node](26)
   var wordComplete = false
 }
 
+/**
+  * Trie class consisting of Nodes
+  */
 class Trie extends Node {
 
-  val ALPHABET_OFFSET = 97 // the lower case alphabet begins at 97
-  // 'a' has an int value of 97, respectively its position in the ASCII table
-  // for the Node class we make use of the numbers 0-25 as indices corresponding to the alphabet letters
+  val ALPHABET_OFFSET = 97 // Lowercase alphabet begins at 97.
+  // 'a' has an int value of 97, respectively its position in ASCII table.
+  // For the Node class we make use of numbers 0-25 as indices, corresponding to the alphabet letters.
 
+  /**
+    * Wrapper method which calls recursive insert method on current node.
+    * @param word   String which will be inserted into Trie
+    *
+    */
   def insert(word: String): Unit = {
+
     def insert(word: String, node: Node): Unit = {
       if (word.length > 0) {
 
@@ -23,14 +36,19 @@ class Trie extends Node {
           node.nextNode(charIndex) = new Node
         insert(word.tail, node.nextNode(charIndex))
       }
-      else node.wordComplete = true  // mark as word after String was completely inserted,
-      // later required to collect set of existing words
+      else node.wordComplete = true
     }
-    // start with root node, i.e. this trie
+
     insert(word, this)
   }
 
+  /**
+    * Wrapper method which calls recursive searchPrefixNode method on current node.
+    * @param prefix   String which will be traversed until last node is reached
+    * @return         Last Node of 'prefix'
+    */
   def searchPrefixNode(prefix: String):  Node = {
+
     def searchPrefixNode(prefix: String, node: Node): Node = {
       if (prefix.length > 0) {
 
@@ -41,17 +59,29 @@ class Trie extends Node {
       }
       else node
     }
+
     searchPrefixNode(prefix, this)
   }
 
+  /**
+    * Checks if Trie contains argument.
+    * @param word   String which will be traversed & whose last Node has to contain a complete word.
+    * @return       Boolean value of last Node of 'word' in Trie
+    */
   def contains(word: String): Boolean = searchPrefixNode(word).wordComplete
 
+  /**
+    * Searches all possible complete words of 'prefix' in Trie.
+    * @param prefix   String whose last Node will be traversed to all possible words
+    * @param node     Last Node of 'prefix'
+    * @return         Sorted Set of all complete words of 'prefix'
+    */
   def searchByPrefix(prefix: String, node: Node): SortedSet[String] = {
     var tempSet = SortedSet[String]()
 
     for(charIndex <- node.nextNode.indices) {
       if(node.nextNode(charIndex) != null) {
-        val newWord = prefix + (charIndex+97).toChar
+        val newWord = prefix + (charIndex+ALPHABET_OFFSET).toChar
 
         if(node.nextNode(charIndex).wordComplete)
           tempSet += newWord
@@ -64,6 +94,9 @@ class Trie extends Node {
 
 object Trie {
 
+  /**
+    * Creates Trie and reversed Trie based on Source. Handles query call.
+    */
   def main(args : Array[String]): Unit =  {
 
     val trie = new Trie
@@ -78,6 +111,11 @@ object Trie {
 
     query_call()
 
+    /**
+      * Handles query call by '*' position in input & calls prefix/suffix/infix_search respectively.
+      * @param query  Normalized user input
+      * @return       Sorted Set of query results
+      */
     def query(query: String): SortedSet[String] = {
 
       val asterixAt = query.indexOf("*")
@@ -91,19 +129,29 @@ object Trie {
       else
         infix_search()
 
+      /**
+        * queries which end with '*'
+        */
       def prefix_search() = {
         val prefix = query.substring(0, asterixAt)
         result = trie.searchByPrefix(prefix, trie.searchPrefixNode(prefix))
       }
 
-      def suffix_search() = { // here we have to do a prefix search on the reversedTrie
+      /**
+        * queries which start with '*'
+        */
+      def suffix_search() = {
         val prefix = suffix.reverse
         result = reversedtrie
           .searchByPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
           .map(word => word.reverse)
       }
 
-      def infix_search() = { //infix search here
+      /**
+        * queries which contain '*' but don't start or end with it.
+        * Calls 'prefix_search' on query and 'suffix_search' on inverted query, returns intersection.
+        */
+      def infix_search() = {
         var prefix = query.substring(0, asterixAt)
         val trieResults = trie.searchByPrefix(prefix, trie.searchPrefixNode(prefix))
 
@@ -118,6 +166,10 @@ object Trie {
       result
     }
 
+    /**
+      * Handles (possibly invalid) user inputs.
+      * Only ([A-Z][a-z])*('*')?([A-Z][a-z])* will be searched, uppercase will be normalized.
+      */
     def query_call(): Unit = {
       print("trie-search: "); val input = StdIn.readLine().toLowerCase
       if (input.count(_ == '*') == 1) {
