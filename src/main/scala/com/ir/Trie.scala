@@ -4,25 +4,30 @@ import scala.collection.immutable.SortedSet
 import scala.io.{Source, StdIn}
 
 class Node {
-  val nodeArray = new Array[Node](26)
+  val nextNode = new Array[Node](26)
   var wordComplete = false
 }
 
 class Trie extends Node {
 
-  def add(word: String): Unit = {
-    def add(word: String, node: Node): Unit = {
-      if (word.length > 0) {
+  val ALPHABET_OFFSET = 97 // the lower case alphabet begins at 97
+  // 'a' has an int value of 97, respectively its position in the ASCII table
+  // for the Node class we make use of the numbers 0-25 as indices corresponding to the alphabet letters
 
-        val index = word.head - 'a'
-        if (node.nodeArray(index) == null)
-          node.nodeArray(index) = new Node
-        add(word.tail, node.nodeArray(index))
+  def insert(word: String): Unit = {
+    // start with root node, i.e. this trie
+    insert(word, this)
 
+    def insert(remainingWord: String, node: Node): Unit = {
+      if (remainingWord.length > 0) {
+        val charIndex = remainingWord.head - ALPHABET_OFFSET
+        if (node.nextNode(charIndex) == null)
+          node.nextNode(charIndex) = new Node
+        insert(remainingWord.tail, node.nextNode(charIndex))
       }
-      else node.wordComplete = true
+      else node.wordComplete = true  // mark as word after String was completely inserted,
+      // later required to collect set of existing words
     }
-    add(word, this)
   }
 
   def searchPrefixNode(prefix: String):  Node = {
@@ -30,9 +35,9 @@ class Trie extends Node {
       if (prefix.length > 0) {
 
         val index = prefix.head - 'a'
-        if (node.nodeArray(index) == null)
+        if (node.nextNode(index) == null)
           return new Node
-        searchPrefixNode(prefix.tail, node.nodeArray(index))
+        searchPrefixNode(prefix.tail, node.nextNode(index))
       }
       else node
     }
@@ -45,13 +50,13 @@ class Trie extends Node {
     var tempSet = SortedSet[String]()
 
     if(node != null)
-      for(charIndex <- node.nodeArray.indices){
-        if(node.nodeArray(charIndex) != null){
+      for(charIndex <- node.nextNode.indices){
+        if(node.nextNode(charIndex) != null){
           val newWord = prefix + (charIndex+97).toChar
 
-          if(node.nodeArray(charIndex).wordComplete)
+          if(node.nextNode(charIndex).wordComplete)
             tempSet += newWord
-          tempSet = tempSet ++ searchPrefix(newWord, node.nodeArray(charIndex))
+          tempSet = tempSet ++ searchPrefix(newWord, node.nextNode(charIndex))
         }
       }
     tempSet
@@ -68,8 +73,8 @@ object Trie {
     val lines = Source.fromFile("sowpods.txt").getLines()
 
     for (word <- lines) {
-      trie.add(word)
-      reversedtrie.add(word.reverse)
+      trie.insert(word)
+      reversedtrie.insert(word.reverse)
     }
 
     query_call()
