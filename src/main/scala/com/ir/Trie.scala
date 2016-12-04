@@ -196,7 +196,8 @@ object Trie {
       if (input.forall(char => (char - 97) >= 0 && (char - 97)  < 25 || char == '*')) {
 
         if (input.count(_ == '*') == 1) {
-          if (trie.contains(input.filter(_ != '*'))) //empty '*' case
+          if (trie.contains(input.filter(_ != '*')) && input.startsWith("*") //empty '*' case
+                                                    || input.endsWith("*"))
             println(input.filter(_ != '*'))
           query(input).foreach(println)
         }
