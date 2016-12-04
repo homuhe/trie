@@ -60,7 +60,7 @@ class Trie extends Node {
     def searchPrefixNode(prefix: String, node: Node): Node = {
       if (prefix.length > 0) {
 
-        val index = prefix.head - 'a'
+        val index = prefix.head - ALPHABET_OFFSET
         if (node.nextNode(index) == null)
           return new Node
         searchPrefixNode(prefix.tail, node.nextNode(index))
@@ -86,14 +86,12 @@ class Trie extends Node {
     */
   def searchByPrefix(prefix: String, node: Node): SortedSet[String] = {
     var tempSet = SortedSet[String]()
+    if(node.wordComplete) tempSet += prefix    // adding the newly created word to the Set
 
     for(charIndex <- node.nextNode.indices) {
       if(node.nextNode(charIndex) != null) {
-        val newWord = prefix + (charIndex+ALPHABET_OFFSET).toChar
-
-        if(node.nextNode(charIndex).wordComplete)
-          tempSet += newWord
-        tempSet = tempSet ++ searchByPrefix(newWord, node.nextNode(charIndex))
+        val newWord = prefix + (charIndex+ALPHABET_OFFSET).toChar     //adding next possible letter to prefix
+        tempSet = tempSet ++ searchByPrefix(newWord, node.nextNode(charIndex))  // gather rest recursively
       }
     }
     tempSet
@@ -125,6 +123,7 @@ object Trie {
       reversedtrie.insert(word.reverse)
     }
 
+    println("#################|TRIE-SEARCHER|#################")
     query_call()
 
     /**
@@ -190,19 +189,17 @@ object Trie {
       */
     def query_call(): Unit = {
 
-      print("\ntrie-search: "); val input = StdIn.readLine().toLowerCase
+      print("\nEnter your query: "); val input = StdIn.readLine().toLowerCase
 
-      // Only ([a-z])*('*')*([a-z])* queries
-      if (input.forall(char => (char - 97) >= 0 && (char - 97)  < 25 || char == '*')) {
-
+      // Only only [a-z]* alphabet (/w asterix) queries allowed
+      if (input.matches("([a-z]*|\\*)*")) {
         if (input.count(_ == '*') == 1) {
-          if (trie.contains(input.filter(_ != '*')) && input.startsWith("*") //empty '*' case
-                                                    || input.endsWith("*"))
-            println(input.filter(_ != '*'))
-          query(input).foreach(println)
+          val storeResults = query(input)
+          if(storeResults.nonEmpty) storeResults.foreach(println)
+          else println("No findings matching your query.")
         }
         else if (input.count(_ == '*') == 0) {
-          if(trie.contains(input)) println(input)
+          if(trie.contains(input)) println(input + " exists in the lexicon.")
           else println(input + " not in lexicon.")
         }
         else println("Only one or less '*' symbols are allowed.")
