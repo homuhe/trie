@@ -108,10 +108,17 @@ object Trie {
     */
   def main(args : Array[String]): Unit =  {
 
+    var file = ""
+
+    if (args.length != 1) help()
+    else {
+      file = args(0)
+    }
+
     val trie = new Trie
     val reversedtrie = new Trie
 
-    val lines = Source.fromFile("sowpods.txt").getLines()
+    val lines = Source.fromFile(file).getLines()
 
     for (word <- lines) {
       trie.insert(word)
@@ -201,5 +208,14 @@ object Trie {
       else println("Only letters A-Za-z and one or less '*' symbols are allowed.")
       query_call()
     }
+  }
+
+  /**
+    * Help function for correct usage
+    */
+  def help() = {
+    println("Usage: ./wildcard arg1")
+    println("\t\targ1: INPUT - filename of a text file containing a word list")
+    sys.exit()
   }
 }
