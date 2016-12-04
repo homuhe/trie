@@ -11,7 +11,6 @@ import scala.io.{Source, StdIn}
   */
 
 
-
 /**
   * Node class consisting of: - Node Array of size 26
   *                           - boolean which marks if Node contains a complete word
@@ -105,6 +104,7 @@ object Trie {
 
   /**
     * Creates Trie and reversed Trie based on Source. Handles query call.
+    * @param args filename of a text file containing a word list
     */
   def main(args : Array[String]): Unit =  {
 
