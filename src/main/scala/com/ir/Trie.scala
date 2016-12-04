@@ -204,8 +204,9 @@ object Trie {
           if(trie.contains(input)) println(input)
           else println(input + " not in lexicon.")
         }
+        else println("Only one or less '*' symbols are allowed.")
       }
-      else println("Only letters A-Za-z and one or less '*' symbols are allowed.")
+      else println("Only letters A-Za-z are allowed.")
       query_call()
     }
   }
