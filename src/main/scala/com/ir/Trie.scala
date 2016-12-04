@@ -46,7 +46,7 @@ class Trie extends Node {
 
   def contains(word: String): Boolean = searchPrefixNode(word).wordComplete
 
-  def searchPrefix(prefix: String, node: Node): SortedSet[String] = {
+  def searchByPrefix(prefix: String, node: Node): SortedSet[String] = {
     var tempSet = SortedSet[String]()
 
     for(charIndex <- node.nextNode.indices) {
@@ -55,7 +55,7 @@ class Trie extends Node {
 
         if(node.nextNode(charIndex).wordComplete)
           tempSet += newWord
-        tempSet = tempSet ++ searchPrefix(newWord, node.nextNode(charIndex))
+        tempSet = tempSet ++ searchByPrefix(newWord, node.nextNode(charIndex))
       }
     }
     tempSet
@@ -93,24 +93,24 @@ object Trie {
 
       def prefix_search() = {
         val prefix = query.substring(0, asterixAt)
-        result = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
+        result = trie.searchByPrefix(prefix, trie.searchPrefixNode(prefix))
       }
 
       def suffix_search() = { // here we have to do a prefix search on the reversedTrie
         val prefix = suffix.reverse
         result = reversedtrie
-          .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
+          .searchByPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
           .map(word => word.reverse)
       }
 
       def infix_search() = { //infix search here
         var prefix = query.substring(0, asterixAt)
-        val trieResults = trie.searchPrefix(prefix, trie.searchPrefixNode(prefix))
+        val trieResults = trie.searchByPrefix(prefix, trie.searchPrefixNode(prefix))
 
         prefix = suffix.reverse
 
         val reversedTrieResults = reversedtrie
-          .searchPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
+          .searchByPrefix(prefix, reversedtrie.searchPrefixNode(prefix))
           .map(word => word.reverse)
 
         result = trieResults.intersect(reversedTrieResults)
