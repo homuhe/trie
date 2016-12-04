@@ -1,6 +1,6 @@
 {
   "name": "Trie",
   "tagline": "HS Information Retrieval WS16/17 - Assignment 2",
-  "body": "# Trie\r\nHS Information Retrieval WS16/17 - Assignment 2\r\n\r\n\r\n\r\nNaive implementation of a wildcard query search (e.g. col\\*r) based on a Trie.\r\n\r\n\r\n\r\n**Usage:**\r\n\r\n```\r\n./wildcard\r\n```\r\n \r\n \r\n  \r\n  \r\n  \r\nAuthors:\r\n\r\nAlexander Hartmann, Holger Muth-Hellebrandt\r\n",
+  "body": "# Trie\r\nHS Information Retrieval WS16/17 - Assignment 2\r\n\r\n\r\n\r\nNaive implementation of a wildcard query search (e.g. col\\*r) based on a Trie.\r\n\r\n\r\n\r\n**Usage:**\r\n\r\n```\r\n./wildcard arg1\r\n    arg1: INPUT - filename of a text file containing a word list\r\n```\r\n \r\n \r\n \r\n  \r\n  \r\n  \r\nAuthors:\r\n\r\nAlexander Hartmann, Holger Muth-Hellebrandt\r\n",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
