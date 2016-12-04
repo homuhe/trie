@@ -10,7 +10,9 @@ Naive implementation of a wildcard query search (e.g. col\*r) based on a Trie.
 **Usage:**
 
 ```
-./wildcard
+./wildcard arg1
+    arg1: INPUT - filename of a text file containing a word list
+```
  
  
  
