@@ -103,7 +103,7 @@ class Trie extends Node {
 object Trie {
 
   /**
-    * Creates Trie and reversed Trie based on Source. Handles query call.
+    * Creates Trie & reversed Trie based on Source. Handles query call.
     * @param args filename of a text file containing a word list
     */
   def main(args : Array[String]): Unit =  {
