@@ -15,12 +15,13 @@ class Trie extends Node {
   // for the Node class we make use of the numbers 0-25 as indices corresponding to the alphabet letters
 
   def insert(word: String): Unit = {
-    def insert(remainingWord: String, node: Node): Unit = {
-      if (remainingWord.length > 0) {
-        val charIndex = remainingWord.head - ALPHABET_OFFSET
+    def insert(word: String, node: Node): Unit = {
+      if (word.length > 0) {
+
+        val charIndex = word.head - ALPHABET_OFFSET
         if (node.nextNode(charIndex) == null)
           node.nextNode(charIndex) = new Node
-        insert(remainingWord.tail, node.nextNode(charIndex))
+        insert(word.tail, node.nextNode(charIndex))
       }
       else node.wordComplete = true  // mark as word after String was completely inserted,
       // later required to collect set of existing words
@@ -48,16 +49,15 @@ class Trie extends Node {
   def searchPrefix(prefix: String, node: Node): SortedSet[String] = {
     var tempSet = SortedSet[String]()
 
-    if(node != null)
-      for(charIndex <- node.nextNode.indices){
-        if(node.nextNode(charIndex) != null){
-          val newWord = prefix + (charIndex+97).toChar
+    for(charIndex <- node.nextNode.indices) {
+      if(node.nextNode(charIndex) != null) {
+        val newWord = prefix + (charIndex+97).toChar
 
-          if(node.nextNode(charIndex).wordComplete)
-            tempSet += newWord
-          tempSet = tempSet ++ searchPrefix(newWord, node.nextNode(charIndex))
-        }
+        if(node.nextNode(charIndex).wordComplete)
+          tempSet += newWord
+        tempSet = tempSet ++ searchPrefix(newWord, node.nextNode(charIndex))
       }
+    }
     tempSet
   }
 }
