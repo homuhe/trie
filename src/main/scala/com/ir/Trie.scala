@@ -15,9 +15,6 @@ class Trie extends Node {
   // for the Node class we make use of the numbers 0-25 as indices corresponding to the alphabet letters
 
   def insert(word: String): Unit = {
-    // start with root node, i.e. this trie
-    insert(word, this)
-
     def insert(remainingWord: String, node: Node): Unit = {
       if (remainingWord.length > 0) {
         val charIndex = remainingWord.head - ALPHABET_OFFSET
@@ -28,6 +25,8 @@ class Trie extends Node {
       else node.wordComplete = true  // mark as word after String was completely inserted,
       // later required to collect set of existing words
     }
+    // start with root node, i.e. this trie
+    insert(word, this)
   }
 
   def searchPrefixNode(prefix: String):  Node = {
