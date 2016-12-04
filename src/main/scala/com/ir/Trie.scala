@@ -119,16 +119,17 @@ object Trie {
     }
 
     def query_call(): Unit = {
-      print("trie-search: "); val input = StdIn.readLine()
-      if (input.contains("*")) {
-        if (trie.contains(input.filter(_ != '*'))) //words starting/ending with * which are in lexicon
-          println(input.filter(_ != '*'))           //TODO: enhance solution
+      print("trie-search: "); val input = StdIn.readLine().toLowerCase
+      if (input.count(_ == '*') == 1) {
+        if (trie.contains(input.filter(_ != '*'))) //empty '*' case
+          println(input.filter(_ != '*'))
         query(input).foreach(println)
       }
-      else {
+      else if (input.count(_ == '*') == 0) {
         if(trie.contains(input)) println(input)
         else println(input + " not in lexicon.")
       }
+      else println("Only 1 '*' or less allowed in search query.")
       query_call()
     }
   }
