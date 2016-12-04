@@ -186,7 +186,7 @@ object Trie {
       print("trie-search: "); val input = StdIn.readLine().toLowerCase
 
       // Only ([a-z])*('*')*([a-z])* queries
-      if (input.forall(char => (char - 97) > 0 && (char - 97)  < 25 || char == '*')) {
+      if (input.forall(char => (char - 97) >= 0 && (char - 97)  < 25 || char == '*')) {
 
         if (input.count(_ == '*') == 1) {
           if (trie.contains(input.filter(_ != '*'))) //empty '*' case
