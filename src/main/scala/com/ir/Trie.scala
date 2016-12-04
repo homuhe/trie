@@ -1,5 +1,7 @@
 package com.ir
 
+import java.util.logging.Logger
+
 import scala.collection.SortedSet
 import scala.io.{Source, StdIn}
 
@@ -69,8 +71,12 @@ object Trie {
 
   def main(args : Array[String]): Unit =  {
 
+
+
     val trie = new Trie
     val reversedtrie = new Trie
+
+
 
     val lines = Source.fromFile("sowpods.txt").getLines()
 
@@ -78,6 +84,20 @@ object Trie {
       trie.insert(word)
       reversedtrie.insert(word.reverse)
     }
+
+    showMemoryPerformance()
+
+    def showMemoryPerformance() = {
+      // code from: http://alvinalexander.com/scala/how-show-memory-ram-use-scala-application-used-free-total-max
+      // memory info
+      val mb = 1024*1024
+      val runtime = Runtime.getRuntime
+      println("** Used Memory:  " + (runtime.totalMemory - runtime.freeMemory) / mb)
+      println("** Free Memory:  " + runtime.freeMemory / mb)
+      println("** Total Memory: " + runtime.totalMemory / mb)
+      println("** Max Memory:   " + runtime.maxMemory / mb)
+    }
+
 
     query_call()
 
